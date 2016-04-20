@@ -10,6 +10,22 @@ class LimitError(Exception):
 	def __repr__(self):
 		return self._message
 
+#常熟类
+class Count:
+
+	def __init__(self,value):
+		if not isinstance(value, (int, str, float)):
+			raise LimitError("You only can set the value of int ,float or str!")
+		self._value = value
+
+	@property
+	def value(self):
+	    return self._value
+
+	@value.setter
+	def value(self,value):
+		raise LimitError("You can't change the value!")
+	
 #利用装饰器限制python的参数数据类型
 def type_limit(*typeLimit,**returnType):
 	def test_value_type(func):
@@ -35,27 +51,23 @@ def type_limit(*typeLimit,**returnType):
 #使用装饰器指定某个以列表或元组为参数时，限制指定长度，不够长则自动补充，可指定补充的元素
 #info[value] =  length
 #info[supp] = None #补充元素
+#*var指定的次序跟参数中list出现的次序一样
 def list_limit(*var,**info):
 	default = info.get("supp",None)
 	var_name_list = [ value  for value in var]
 	def test_length(func):
 		def wrapper(*param,**kw):
-			param_length = len(param)
-			if param_length != len(var_name_list):
-				raise LimitError("The number of param in this function must same length as "\
-				    "the number of param that you want to limit!")
-			for index in range(param_length):
-				var_name = var_name_list[index]
-				#最小长度限制
-				min_length = info.get(var_name,0)
-				var_value = param[index]
-				if not isinstance(var_value,list):
-					raise LimitError("You can only limit the param,which is a list!Type of %s"\
-					        " is %s"%(var_value,type(var_value)))
-				#print("name: %s  value: %s   min_length:%s"%(var_name,var_value,min_length))
-				now_length = len(var_value)
-				if now_length < min_length:
-					var_value += [default for num in range(min_length-now_length)]
+			var_index = 0
+			for v in param:
+				var_value = v
+				if isinstance(var_value,list) and var_index < len(var_name_list[var_index]):
+					var_name = var_name_list[var_index]
+					var_index += 1
+					#最小长度限制
+					min_length = info.get(var_name,0)
+					now_length = len(var_value)
+					if now_length < min_length:
+						var_value += [default for num in range(min_length-now_length)]
 			return func(*param,**kw)
 		return wrapper
 	return test_length
