@@ -11,7 +11,7 @@ class LimitError(Exception):
 		return self._message
 
 #常熟类
-class Count:
+class Const:
 
 	def __init__(self,value):
 		if not isinstance(value, (int, str, float)):
